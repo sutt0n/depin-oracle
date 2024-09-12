@@ -1,0 +1,34 @@
+version: '3'
+
+services:
+  mqtt-broker:
+    image: eclipse-mosquitto
+    container_name: mqtt-broker
+    environment:
+      - PUID=1000
+      - PGID=1000
+    ports:
+      - "8883:8883" # MQTT TLS protocol port
+    volumes:
+      - ./dev/mosquitto/certs:/mosquitto/certs
+      - ./dev/mosquitto/config:/mosquitto/config
+      - ./dev/mosquitto/data:/mosquitto/data
+    restart: always
+  postgres:
+    image: postgres:14.1
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=pg
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - oracledata:/var/lib/postgresql/data
+
+volumes:
+  oracledata:

@@ -1,0 +1,10 @@
+
+app:
+  broker:
+    uri: localhost
+    keep_alive: 5
+    port: 8883
+    topic: skypal/drone
+    ca_cert: ./dev/mosquitto/certs/ca.crt
+    client_cert: ./dev/mosquitto/certs/client.crt
+    client_key: ./dev/mosquitto/certs/client.key

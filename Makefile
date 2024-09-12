@@ -1,0 +1,83 @@
+# Directory for certificates
+CERT_DIR = ./dev/mosquitto/certs
+
+# Make sure the certs directory exists
+certs_dir:
+	@mkdir -p $(CERT_DIR)
+
+# Generate CA key with RSA 3072-bit for better security
+generate_ca_key: certs_dir
+	@echo "Generating CA key"
+	@openssl genpkey -algorithm RSA -out $(CERT_DIR)/ca.key -pkeyopt rsa_keygen_bits:3072
+
+# Generate CA certificate
+generate_ca_cert: generate_ca_key
+	@echo "Generating CA certificate"
+	@openssl req -x509 -new -nodes -key $(CERT_DIR)/ca.key -sha256 -days 3650 -out $(CERT_DIR)/ca.crt -subj "/C=US/ST=CA/L=City/O=TestCA/OU=TestCA/CN=TestCA"
+
+# Bootstrap the CA generation consecutively
+bootstrap_ca: generate_ca_key generate_ca_cert
+
+# Generate server key with RSA 3072-bit
+generate_server_key: certs_dir
+	@echo "Generating server key"
+	@openssl genpkey -algorithm RSA -out $(CERT_DIR)/server.key -pkeyopt rsa_keygen_bits:3072
+
+# Generate server CSR
+generate_server_csr: generate_server_key
+	@echo "Generating server CSR"
+	@openssl req -new -key $(CERT_DIR)/server.key -out $(CERT_DIR)/server.csr -subj "/C=US/ST=CA/L=City/O=Test/OU=Test/CN=server"
+
+# Create extension file for subjectAltName
+create_server_extfile:
+	@echo "Creating server extension file"
+	@echo "subjectAltName = DNS:*, DNS:localhost, IP:192.168.1.79, IP:127.0.0.1\nkeyUsage = digitalSignature,keyEncipherment\nextendedKeyUsage = serverAuth" > /tmp/server_extfile.conf
+
+# Sign server certificate
+sign_server_cert: generate_server_csr create_server_extfile
+	@echo "Signing server certificate"
+	@openssl x509 -req -in $(CERT_DIR)/server.csr -CA $(CERT_DIR)/ca.crt -CAkey $(CERT_DIR)/ca.key -CAcreateserial -out $(CERT_DIR)/server.crt -days 365 -sha256 -extfile /tmp/server_extfile.conf
+	@rm /tmp/server_extfile.conf
+
+# Bootstrap server certificate generation
+bootstrap_server: generate_server_key generate_server_csr sign_server_cert
+
+# Generate client key with RSA 3072-bit
+generate_client_key: certs_dir
+	@echo "Generating client key"
+	@openssl genpkey -algorithm RSA -out $(CERT_DIR)/client.key -pkeyopt rsa_keygen_bits:3072
+
+# Generate client CSR
+generate_client_csr: generate_client_key
+	@echo "Generating client CSR"
+	@openssl req -new -key $(CERT_DIR)/client.key -out $(CERT_DIR)/client.csr -subj "/C=US/ST=CA/L=City/O=Test/OU=Test/CN=client"
+
+# Create client extension file for keyUsage and extendedKeyUsage
+create_client_extfile:
+	@echo "Creating client extension file"
+	@echo "keyUsage = digitalSignature,keyEncipherment\nextendedKeyUsage = clientAuth" > /tmp/client_extfile.conf
+
+# Sign client certificate
+sign_client_cert: generate_client_csr create_client_extfile
+	@echo "Signing client certificate"
+	@openssl x509 -req -in $(CERT_DIR)/client.csr -CA $(CERT_DIR)/ca.crt -CAkey $(CERT_DIR)/ca.key -CAcreateserial -out $(CERT_DIR)/client.crt -days 365 -sha256 -extfile /tmp/client_extfile.conf
+	@rm /tmp/client_extfile.conf
+
+# Bootstrap client certificate generation
+bootstrap_client: generate_client_key generate_client_csr sign_client_cert
+
+# Install dependencies for testing
+install_test_deps:
+	@echo "Installing testing dependencies"
+	@brew install mosquitto
+	@docker compose up -d
+
+# Send a message to the broker using TLS v1.3
+send_message:
+	@echo "Sending message with TLS v1.3"
+	@mosquitto_pub -h localhost -p 8883 --cafile $(CERT_DIR)/ca.crt --cert $(CERT_DIR)/client.crt --key $(CERT_DIR)/client.key -t "skypal/drone" -m "Hello, world" --tls-version tlsv1.3
+
+# Clean up generated certs
+clean:
+	@echo "Cleaning up certificates"
+	@rm -rf $(CERT_DIR)/*.crt $(CERT_DIR)/*.csr $(CERT_DIR)/*.key $(CERT_DIR)/*.srl

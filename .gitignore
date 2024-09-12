@@ -1,0 +1,4 @@
+/target
+/dev/mosquitto/data
+/dev/mosquitto/log
+/dev/mosquitto/certs
