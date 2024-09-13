@@ -6,5 +6,5 @@ app:
     port: 8883
     topic: skypal/drone
     ca_cert: ./dev/mosquitto/certs/ca.crt
-    client_cert: ./dev/mosquitto/certs/client.crt
-    client_key: ./dev/mosquitto/certs/client.key
+    client_cert: ./dev/mosquitto/certs/oracle.crt
+    client_key: ./dev/mosquitto/certs/oracle.key
