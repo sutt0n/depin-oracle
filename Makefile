@@ -66,6 +66,14 @@ sign_client_cert: generate_client_csr create_client_extfile
 # Bootstrap client certificate generation
 bootstrap_client: generate_client_key generate_client_csr sign_client_cert
 
+# Bootstrap oracle client
+bootstrap_oracle: 
+	@echo "Generating oracle client certificate"
+	@openssl genpkey -algorithm RSA -out $(CERT_DIR)/oracle.key -pkeyopt rsa_keygen_bits:3072
+	@openssl req -new -key $(CERT_DIR)/oracle.key -out $(CERT_DIR)/oracle.csr -subj "/C=US/ST=CA/L=City/O=Oracle/OU=Oracle/CN=oracle"
+	@openssl x509 -req -in $(CERT_DIR)/oracle.csr -CA $(CERT_DIR)/ca.crt -CAkey $(CERT_DIR)/ca.key -CAcreateserial -out $(CERT_DIR)/oracle.crt -days 365 -sha256
+
+
 # Install dependencies for testing
 install_test_deps:
 	@echo "Installing testing dependencies"

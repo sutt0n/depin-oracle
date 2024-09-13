@@ -5,6 +5,7 @@ pub use config::*;
 use sqlx::{Pool, Postgres};
 
 use crate::broker::Broker;
+use crate::drone::Drone;
 
 #[derive(Clone)]
 pub struct OracleApp {
@@ -26,9 +27,12 @@ impl OracleApp {
         })
     }
 
-    //pub async fn handle_drone_mqtt(&self, message: DronePayload) -> anyhow::Result<()> {
-    //    println!("Handling drone mqtt message: {:?}", message);
-    //
-    //    Ok(())
-    //}
+    pub async fn handle_drone_mqtt(&self, message: Vec<u8>) -> anyhow::Result<()> {
+        println!("Handling drone mqtt message: {:?}", message);
+
+        let drone = bincode::deserialize::<Drone>(&message)?;
+        println!("Drone: {:?}", drone);
+
+        Ok(())
+    }
 }

@@ -18,8 +18,8 @@ pub struct Broker {
 
 impl Broker {
     pub async fn init(config: BrokerConfig) -> anyhow::Result<Self, BrokerError> {
-        let mut mqtt_options = MqttOptions::new("Test", config.uri.clone(), config.port.clone());
-        mqtt_options.set_keep_alive(Duration::from_secs(config.keep_alive.clone()));
+        let mut mqtt_options = MqttOptions::new("Test1", config.uri.clone(), config.port);
+        mqtt_options.set_keep_alive(Duration::from_secs(config.keep_alive));
 
         if !config.ca_cert.is_empty() {
             let ca = std::fs::read(config.ca_cert.clone()).unwrap();
@@ -54,28 +54,25 @@ impl Broker {
             .subscribe(self._config.topic.clone(), rumqttc::QoS::AtMostOnce)
             .await?;
 
-        loop {
-            let event = eventloop.poll().await?;
+        let _ = tokio::spawn(async move {
+            loop {
+                let event = eventloop.poll().await;
 
-            match &event {
-                rumqttc::Event::Incoming(incoming) => {
+                if let rumqttc::Event::Incoming(incoming) = event.unwrap() {
                     println!("Incoming Event: {:?}", incoming);
 
                     if let rumqttc::Packet::Publish(publish) = incoming {
                         let payload = publish.payload.clone();
-                        let payload_str = std::str::from_utf8(&payload).unwrap();
-                        println!("Payload: {:?}", payload_str);
+                        // bytes to Vec<u8>
+                        let payload = payload.to_vec();
+
+                        app.handle_drone_mqtt(payload).await;
                     }
                 }
-                rumqttc::Event::Outgoing(outgoing) => {
-                    println!("Outgoing Event: {:?}", outgoing);
-                }
             }
+        })
+        .await;
 
-            //let drone_payload = stream.next().await.unwrap();
-            //let notification = drone_payload.unwrap();
-            //
-            //app.handle_notification(notification);
-        }
+        Ok(())
     }
 }
