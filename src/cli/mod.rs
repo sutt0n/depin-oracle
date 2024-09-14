@@ -33,7 +33,8 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
     let broker = crate::broker::Broker::init(config.app.broker.clone()).await?;
-    let app = crate::app::OracleApp::init(pool, config.app, broker.clone()).await?;
+    let solana = crate::solana::SolanaClient::init(config.app.solana.clone()).await?;
+    let app = crate::app::OracleApp::init(pool, config.app, broker.clone(), solana.clone()).await?;
 
     // println!("Starting notifications graphql server");
     // let graphql_send = send.clone();

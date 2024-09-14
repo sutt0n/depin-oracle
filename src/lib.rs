@@ -4,3 +4,4 @@ mod app;
 pub mod broker;
 pub mod cli;
 pub mod drone;
+pub mod solana;
