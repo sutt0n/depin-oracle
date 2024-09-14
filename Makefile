@@ -89,3 +89,35 @@ send_message:
 clean:
 	@echo "Cleaning up certificates"
 	@rm -rf $(CERT_DIR)/*.crt $(CERT_DIR)/*.csr $(CERT_DIR)/*.key $(CERT_DIR)/*.srl
+
+
+#############################################
+# Solana Commands 													#
+#############################################
+
+solana_devnet:
+	@solana config set --url https://api.devnet.solana.com
+
+solana_localnet:
+	@solana config set --url http://localhost:8899
+
+solana_create_wallet:
+	@mkdir -p ./dev/solana
+	@solana-keygen new --force --outfile ./dev/solana/keypair.json
+
+# May have to go to the faucet to get some SOL manually
+solana_fund_wallet:
+	@solana airdrop 1 ./dev/solana/keypair.json 
+
+solana_create_token:
+	@spl-token create-token --config ./dev/solana/cli-config.yml --url https://api.devnet.solana.com > ./dev/solana/token_mint_address
+
+TOKEN_ADDRESS=`grep "Address:" ./dev/solana/token_mint_address | sed 's/Address:[[:space:]]*//'`
+
+solana_create_token_account:
+	@spl-token create-account $(TOKEN_ADDRESS) --config ./dev/solana/cli-config.yml > ./dev/solana/token_account_address
+
+TOKEN_ACCOUNT_ADDRESS=`grep "Creating account" ./dev/solana/token_account_address | sed 's/Creating account[[:space:]]*//'`
+
+solana_mint_token:
+	@spl-token mint $(TOKEN_ADDRESS) 1000 $(TOKEN_ACCOUNT_ADDRESS) --config ./dev/solana/cli-config.yml

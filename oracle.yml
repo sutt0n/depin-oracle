@@ -2,9 +2,12 @@
 app:
   broker:
     uri: localhost
-    keep_alive: 5
+    keep_alive: 25
     port: 8883
     topic: skypal/drone
     ca_cert: ./dev/mosquitto/certs/ca.crt
     client_cert: ./dev/mosquitto/certs/oracle.crt
     client_key: ./dev/mosquitto/certs/oracle.key
+  solana:
+    keypair: ./dev/solana/keypair.json
+    mint_address: 9VRPvMi8nL5v2nkjcycJR66qe65Vfn97XrFH9Fugru5h

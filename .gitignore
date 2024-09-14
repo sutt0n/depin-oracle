@@ -2,3 +2,6 @@
 /dev/mosquitto/data
 /dev/mosquitto/log
 /dev/mosquitto/certs
+/dev/solana/keypair.json
+/dev/solana/token_account_address
+/dev/solana/token_mint_address
