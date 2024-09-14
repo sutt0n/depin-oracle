@@ -4,4 +4,4 @@
 /dev/mosquitto/certs
 /dev/solana/keypair.json
 /dev/solana/token_account_address
-/dev/solana/token_mint_addressk
+/dev/solana/token_mint_address
