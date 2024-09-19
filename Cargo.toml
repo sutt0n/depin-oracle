@@ -24,6 +24,7 @@ solana-client = "2.0.2"
 solana-sdk = "2.0.2"
 spl-token = "6.0.0"
 spl-associated-token-account = "5.0.1"
+uuid = { version = "1.8.0", features = ["serde", "v4"] }
 
 [patch.crates-io.aes-gcm-siv]
 git = "https://github.com/RustCrypto/AEADs"

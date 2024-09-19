@@ -16,7 +16,8 @@ use spl_token::{instruction::transfer_checked, state::Mint};
 use sqlx::{Pool, Postgres};
 
 use crate::broker::Broker;
-use crate::drone::Drone;
+use crate::drone::repo::Drones;
+use crate::drone::DronePayload;
 use crate::solana::SolanaClient;
 
 use self::error::ApplicationError;
@@ -26,6 +27,7 @@ pub struct OracleApp {
     _config: AppConfig,
     broker: Broker,
     solana: SolanaClient,
+    drones: Drones,
     _pool: Pool<Postgres>,
 }
 
@@ -34,27 +36,42 @@ impl OracleApp {
         pool: Pool<Postgres>,
         config: AppConfig,
         broker: Broker,
+        drones: Drones,
         solana: SolanaClient,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            broker,
             _config: config,
-            solana,
             _pool: pool,
+            broker,
+            drones,
+            solana,
         })
     }
 
-    pub async fn handle_drone_mqtt(&self, message: Vec<u8>) -> anyhow::Result<()> {
+    pub async fn handle_drone_mqtt(
+        &self,
+        message: Vec<u8>,
+    ) -> anyhow::Result<(), ApplicationError> {
         println!("Handling drone mqtt message: {:?}", message);
 
-        let _drone = bincode::deserialize::<Drone>(&message)?;
+        // decode drone or return error
+        let drone = bincode::deserialize::<DronePayload>(&message).map_err(|e| {
+            ApplicationError::DeserializationError(format!(
+                "Failed to deserialize drone payload: {:?}",
+                e
+            ))
+        })?;
 
-        // todo: calculate rewards
+        self.drones.create(drone).await?;
+
+        // drone: insert drone into db
+        // solana: calculate rewards
+        // queue drone_payout job
 
         //self.submit_payout(drone).await?;
-        self.solana
-            .submit_payout("5FnusLiFyNjZYVo96Mgf4rqsg34NC7LJ9qj9DpVCd2wi".to_string())
-            .await?;
+        //self.solana
+        //    .submit_payout("5FnusLiFyNjZYVo96Mgf4rqsg34NC7LJ9qj9DpVCd2wi".to_string())
+        //    .await?;
         Ok(())
     }
 }

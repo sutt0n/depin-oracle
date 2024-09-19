@@ -2,8 +2,8 @@ use ::chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Drone {
-    pub id: i32,
+pub struct DronePayload {
+    pub id: u64,
     pub serial_number: String,
     pub created: DateTime<Utc>,
     pub latitude: f64,
