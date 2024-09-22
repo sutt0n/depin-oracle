@@ -25,6 +25,12 @@ pub struct SolanaClient {
 }
 
 const SOLANA_DEVNET: &str = "https://api.devnet.solana.com";
+const INITIAL_REWARD: f64 = 50.0;
+const TOKEN_CAP: u64 = 1_000_000_000;
+const TOKEN_DECIMALS: u8 = 9;
+// 10 minute halving interval
+const HALVING_INTERVAL: u64 = 10;
+//const HALVING_INTERVAL: u64 = 15_552_000;
 
 impl SolanaClient {
     pub async fn init(config: SolanaConfig) -> anyhow::Result<Self, SolanaError> {
@@ -42,7 +48,16 @@ impl SolanaClient {
         })
     }
 
-    pub async fn submit_payout(&self, destination_addr: String) -> anyhow::Result<(), SolanaError> {
+    pub async fn calculate_reward(&self, rank: f64) -> anyhow::Result<f64, SolanaError> {
+        let reward = INITIAL_REWARD / 2_f64.powf((rank / HALVING_INTERVAL as f64).floor());
+        Ok(reward)
+    }
+
+    pub async fn submit_payout(
+        &self,
+        destination_addr: String,
+        amount: f64,
+    ) -> anyhow::Result<(), SolanaError> {
         let token_mint_pubkey: Pubkey = self.mint_address;
         let destination_wallet_pubkey: Pubkey = destination_addr.parse()?;
 
@@ -89,18 +104,24 @@ impl SolanaClient {
             }
         }
 
+        let amount = (amount * 10_f64.powi(TOKEN_DECIMALS as i32)) as u64;
+
+        println!("Amount: {:?}", amount);
+
         let mint_ix = mint_to_checked(
             &spl_token::id(),
             &token_mint_pubkey,
             &recipient_token_account,
             &self.keypair.pubkey(),
             &[],
-            1_000_000_000,
+            amount,
             9,
         )?;
         instructions.push(mint_ix);
 
         println!("Instructions: {:?}", instructions);
+
+        // 50_000_000_000
 
         // Build and send transaction
         let recent_blockhash = self.inner.get_latest_blockhash()?;
@@ -116,18 +137,25 @@ impl SolanaClient {
 
         println!("Transaction: {:?}", tx);
 
-        let signature = self.inner.send_and_confirm_transaction(&tx);
+        // do this in a task, so we can continue on
 
-        println!("Signature: {:?}", signature);
+        tokio::spawn({
+            let inner = self.inner.clone();
+            async move {
+                let signature = inner.send_and_confirm_transaction(&tx);
 
-        match signature {
-            Ok(signature) => {
                 println!("Signature: {:?}", signature);
+
+                match signature {
+                    Ok(signature) => {
+                        println!("Signature: {:?}", signature);
+                    }
+                    Err(e) => {
+                        println!("Error: {:?}", e);
+                    }
+                }
             }
-            Err(e) => {
-                println!("Error: {:?}", e);
-            }
-        }
+        });
 
         Ok(())
     }

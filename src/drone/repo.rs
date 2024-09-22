@@ -2,6 +2,9 @@ use sqlx::{Pool, Postgres};
 
 use crate::drone::entity::DroneDto;
 use crate::drone::error::DroneError;
+use crate::primitives::MachineId;
+
+use uuid::Uuid;
 
 #[derive(Clone)]
 pub struct Drones {
@@ -13,11 +16,18 @@ impl Drones {
         Self { pool: pool.clone() }
     }
 
-    pub async fn create(&self, drone: DroneDto) -> anyhow::Result<(), DroneError> {
+    pub async fn create(
+        &self,
+        drone: DroneDto,
+        machine_id: MachineId,
+    ) -> anyhow::Result<(), DroneError> {
         let mut tx = self.pool.begin().await?;
+
+        let machine_uuid: Uuid = machine_id.into();
 
         let _ = sqlx::query!(
             r#"INSERT INTO drone (
+            machine_id,
             serial_number, 
             latitude,
             longitude,
@@ -29,7 +39,8 @@ impl Drones {
             pilot_longitude,
             home_latitude,
             home_longitude
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"#,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)"#,
+            machine_uuid,
             drone.serial_number,
             drone.latitude,
             drone.longitude,

@@ -18,4 +18,6 @@ pub enum ApplicationError {
     SolanaError(#[from] SolanaError),
     #[error("{0}")]
     MachineError(#[from] crate::miner::MachineError),
+    #[error("{0}")]
+    MineAddressError(#[from] crate::miner::address::error::MachineAddressError),
 }
