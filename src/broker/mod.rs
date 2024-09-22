@@ -66,7 +66,7 @@ impl Broker {
                         // bytes to Vec<u8>
                         let payload = payload.to_vec();
 
-                        app.handle_drone_mqtt(payload).await;
+                        let _ = app.handle_drone_mqtt(payload).await;
                     }
                 }
             }

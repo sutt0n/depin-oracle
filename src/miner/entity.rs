@@ -1,7 +1,7 @@
 use ::chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use crate::primitives::{MachineId, MinerId};
+use crate::primitives::MachineId;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MachinePayload {
@@ -13,15 +13,14 @@ pub struct MachinePayload {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct NewMiner {
-    pub id: MinerId,
+    pub id: MachineId,
     pub latitude: f64,
     pub longitude: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Miner {
-    pub id: MinerId,
-    pub machine_id: MachineId,
+    pub id: MachineId,
     pub latitude: f64,
     pub longitude: f64,
     pub created_at: DateTime<Utc>,

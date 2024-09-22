@@ -1,10 +1,20 @@
 use crate::primitives::*;
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct MinerAddress {
     pub id: MinerAddressId,
-    pub miner_id: MinerId,
+    pub machine_id: MachineId,
+    pub address: String,
+    pub status: MinerAddressStatus,
+    pub created_at: DateTime<Utc>,
+    pub modified_at: DateTime<Utc>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct NewMinerAddress {
+    pub machine_id: MachineId,
     pub address: String,
     pub status: MinerAddressStatus,
 }
@@ -15,6 +25,16 @@ pub enum MinerAddressStatus {
     #[default]
     Active,
     Inactive,
+}
+
+impl From<String> for MinerAddressStatus {
+    fn from(s: String) -> Self {
+        match s.as_str() {
+            "active" => MinerAddressStatus::Active,
+            "inactive" => MinerAddressStatus::Inactive,
+            _ => panic!("Invalid miner address status"),
+        }
+    }
 }
 
 impl From<&str> for MinerAddressStatus {
