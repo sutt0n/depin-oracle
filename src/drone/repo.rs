@@ -1,6 +1,6 @@
 use sqlx::{Pool, Postgres};
 
-use crate::drone::entity::DronePayload;
+use crate::drone::entity::DroneDto;
 use crate::drone::error::DroneError;
 
 #[derive(Clone)]
@@ -13,10 +13,10 @@ impl Drones {
         Self { pool: pool.clone() }
     }
 
-    pub async fn create(&self, drone: DronePayload) -> anyhow::Result<(), DroneError> {
+    pub async fn create(&self, drone: DroneDto) -> anyhow::Result<(), DroneError> {
         let mut tx = self.pool.begin().await?;
 
-        let result = sqlx::query!(
+        let _ = sqlx::query!(
             r#"INSERT INTO drone (
             serial_number, 
             latitude,

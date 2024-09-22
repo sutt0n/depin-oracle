@@ -56,5 +56,11 @@ macro_rules! entity_id {
                 Ok(Self(uuid::Uuid::parse_str(s)?))
             }
         }
+
+        impl From<String> for $name {
+            fn from(s: String) -> Self {
+                Self(uuid::Uuid::parse_str(&s).unwrap())
+            }
+        }
     };
 }

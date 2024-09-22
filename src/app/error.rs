@@ -1,5 +1,7 @@
 use thiserror::Error;
 
+use crate::solana::error::SolanaError;
+
 #[derive(Error, Debug)]
 pub enum ApplicationError {
     //#[error("{0}")]
@@ -12,4 +14,8 @@ pub enum ApplicationError {
     DroneError(#[from] crate::drone::DroneError),
     #[error("{0}")]
     DeserializationError(String),
+    #[error("{0}")]
+    SolanaError(#[from] SolanaError),
+    #[error("{0}")]
+    MachineError(#[from] crate::miner::MachineError),
 }

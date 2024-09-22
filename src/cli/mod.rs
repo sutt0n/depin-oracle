@@ -5,7 +5,12 @@ use anyhow::Context;
 use clap::Parser;
 use std::path::PathBuf;
 
-use crate::{broker::Broker, drone::repo::Drones, solana::SolanaClient};
+use crate::{
+    broker::Broker,
+    drone::repo::Drones,
+    miner::{repo::Machines, MinerAddresses},
+    solana::SolanaClient,
+};
 
 use self::config::{Config, EnvOverride};
 
@@ -37,11 +42,15 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let broker = Broker::init(config.app.broker.clone()).await?;
     let solana = SolanaClient::init(config.app.solana.clone()).await?;
     let drones = Drones::new(pool.clone());
+    let machines = Machines::new(pool.clone());
+    let miner_addresses = MinerAddresses::new(pool.clone());
     let app = crate::app::OracleApp::init(
         pool,
         config.app,
         broker.clone(),
         drones.clone(),
+        machines.clone(),
+        miner_addresses.clone(),
         solana.clone(),
     )
     .await?;
