@@ -5,6 +5,13 @@ use anyhow::Context;
 use clap::Parser;
 use std::path::PathBuf;
 
+use crate::{
+    broker::Broker,
+    drone::repo::Drones,
+    miner::{repo::Machines, MinerAddresses},
+    solana::SolanaClient,
+};
+
 use self::config::{Config, EnvOverride};
 
 #[derive(Parser)]
@@ -32,9 +39,21 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let (send, mut receive) = tokio::sync::mpsc::channel(1);
     let mut handles = vec![];
     let pool = db::init_pool(&config.db).await?;
-    let broker = crate::broker::Broker::init(config.app.broker.clone()).await?;
-    let solana = crate::solana::SolanaClient::init(config.app.solana.clone()).await?;
-    let app = crate::app::OracleApp::init(pool, config.app, broker.clone(), solana.clone()).await?;
+    let broker = Broker::init(config.app.broker.clone()).await?;
+    let solana = SolanaClient::init(config.app.solana.clone()).await?;
+    let drones = Drones::new(pool.clone());
+    let machines = Machines::new(pool.clone());
+    let miner_addresses = MinerAddresses::new(pool.clone());
+    let app = crate::app::OracleApp::init(
+        pool,
+        config.app,
+        broker.clone(),
+        drones.clone(),
+        machines.clone(),
+        miner_addresses.clone(),
+        solana.clone(),
+    )
+    .await?;
 
     // println!("Starting notifications graphql server");
     // let graphql_send = send.clone();

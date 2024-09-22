@@ -10,4 +10,4 @@ app:
     client_key: ./dev/mosquitto/certs/oracle.key
   solana:
     keypair: ./dev/solana/keypair.json
-    mint_address: 9VRPvMi8nL5v2nkjcycJR66qe65Vfn97XrFH9Fugru5h
+    mint_address: CaemXN5UKdaP3tBkNxJXeXVtULXmD9qpC2C3aG5YsmSb

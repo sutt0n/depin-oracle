@@ -1,8 +1,10 @@
 use ::chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+use crate::miner::MachinePayload;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Drone {
+pub struct DroneDto {
     pub id: i32,
     pub serial_number: String,
     pub created: DateTime<Utc>,
@@ -16,4 +18,10 @@ pub struct Drone {
     pub pilot_longitude: f64,
     pub home_latitude: f64,
     pub home_longitude: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MqttPayload {
+    pub drone: DroneDto,
+    pub machine: MachinePayload,
 }

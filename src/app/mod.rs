@@ -2,21 +2,13 @@ mod config;
 pub mod error;
 
 pub use config::*;
-use solana_client::rpc_client::RpcClient;
-use solana_sdk::pubkey::Pubkey;
-use solana_sdk::signature::Keypair;
-use solana_sdk::signer::{EncodableKey, Signer};
-use solana_sdk::signers::Signers;
-use solana_sdk::transaction::Transaction;
-use spl_associated_token_account::{
-    get_associated_token_address, instruction::create_associated_token_account,
-};
-use spl_token::instruction::{mint_to, mint_to_checked};
-use spl_token::{instruction::transfer_checked, state::Mint};
 use sqlx::{Pool, Postgres};
 
 use crate::broker::Broker;
-use crate::drone::Drone;
+use crate::drone::repo::Drones;
+use crate::drone::MqttPayload;
+use crate::miner::repo::Machines;
+use crate::miner::{Miner, MinerAddresses};
 use crate::solana::SolanaClient;
 
 use self::error::ApplicationError;
@@ -26,6 +18,9 @@ pub struct OracleApp {
     _config: AppConfig,
     broker: Broker,
     solana: SolanaClient,
+    drones: Drones,
+    machines: Machines,
+    miner_addresses: MinerAddresses,
     _pool: Pool<Postgres>,
 }
 
@@ -34,27 +29,73 @@ impl OracleApp {
         pool: Pool<Postgres>,
         config: AppConfig,
         broker: Broker,
+        drones: Drones,
+        machines: Machines,
+        miner_addresses: MinerAddresses,
         solana: SolanaClient,
     ) -> anyhow::Result<Self> {
         Ok(Self {
-            broker,
             _config: config,
-            solana,
             _pool: pool,
+            broker,
+            drones,
+            machines,
+            miner_addresses,
+            solana,
         })
     }
 
-    pub async fn handle_drone_mqtt(&self, message: Vec<u8>) -> anyhow::Result<()> {
+    pub async fn handle_drone_mqtt(
+        &self,
+        message: Vec<u8>,
+    ) -> anyhow::Result<(), ApplicationError> {
         println!("Handling drone mqtt message: {:?}", message);
 
-        let _drone = bincode::deserialize::<Drone>(&message)?;
+        // decode drone or return error
+        let payload = bincode::deserialize::<MqttPayload>(&message).map_err(|e| {
+            ApplicationError::DeserializationError(format!(
+                "Failed to deserialize drone payload: {:?}",
+                e
+            ))
+        })?;
 
-        // todo: calculate rewards
+        let drone = payload.drone;
+        let machine = payload.machine;
+
+        println!("Drone: {:?}", drone);
+        println!("Machine: {:?}", machine);
+
+        // see if machine exists
+        if let Some(existing_machine) = self.get_existing_machine(machine.clone().id).await? {
+            println!("Existing machine: {:?}", existing_machine);
+            self.machines
+                .update_last_seen(existing_machine.machine_id)
+                .await?;
+        } else {
+            println!("Creating new machine: {:?}", machine);
+            self.machines.create_from_payload(machine).await?;
+        }
+
+        println!("Creating new drone: {:?}", drone);
+
+        self.drones.create(drone).await?;
+
+        // [done] drone: insert drone into db
+        // solana: calculate rewards
+        // todo: queue drone_payout job; for now, just payout
 
         //self.submit_payout(drone).await?;
-        self.solana
-            .submit_payout("5FnusLiFyNjZYVo96Mgf4rqsg34NC7LJ9qj9DpVCd2wi".to_string())
-            .await?;
+        //self.solana
+        //    .submit_payout("HShLUQnxQkcT2rZNxUAJdVeBBwSF6T7JT5XD1dUShKR6".to_string())
+        //    .await?;
         Ok(())
+    }
+
+    async fn get_existing_machine(
+        &self,
+        machine_id: String,
+    ) -> anyhow::Result<Option<Miner>, ApplicationError> {
+        let machine = self.machines.get_by_machine_id(machine_id).await?;
+        Ok(machine)
     }
 }
