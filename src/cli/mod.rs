@@ -1,5 +1,5 @@
 pub mod config;
-mod db;
+pub mod db;
 
 use anyhow::Context;
 use clap::Parser;
@@ -8,8 +8,10 @@ use std::path::PathBuf;
 use crate::{
     broker::Broker,
     drone::repo::Drones,
+    machine_payouts::repo::MachinePayouts,
     miner::{repo::Machines, MinerAddresses},
     solana::SolanaClient,
+    task::Task,
 };
 
 use self::config::{Config, EnvOverride};
@@ -43,15 +45,24 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     let solana = SolanaClient::init(config.app.solana.clone()).await?;
     let drones = Drones::new(pool.clone());
     let machines = Machines::new(pool.clone());
+    let machine_payouts = MachinePayouts::new(pool.clone());
     let miner_addresses = MinerAddresses::new(pool.clone());
+    let task_scheduler = Task::init(
+        config.db.pg_con.clone(),
+        config.app.solana.mint_address.clone(),
+        config.app.solana.keypair.clone(),
+    )
+    .await?;
     let app = crate::app::OracleApp::init(
         pool,
         config.app,
         broker.clone(),
         drones.clone(),
         machines.clone(),
+        machine_payouts.clone(),
         miner_addresses.clone(),
         solana.clone(),
+        task_scheduler.clone(),
     )
     .await?;
 

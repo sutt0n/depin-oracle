@@ -7,9 +7,11 @@ use sqlx::{Pool, Postgres};
 use crate::broker::Broker;
 use crate::drone::repo::Drones;
 use crate::drone::MqttPayload;
+use crate::machine_payouts::repo::MachinePayouts;
 use crate::miner::repo::Machines;
 use crate::miner::{Miner, MinerAddressStatus, MinerAddresses, NewMinerAddress};
 use crate::solana::SolanaClient;
+use crate::task::Task;
 
 use self::error::ApplicationError;
 
@@ -20,7 +22,9 @@ pub struct OracleApp {
     solana: SolanaClient,
     drones: Drones,
     machines: Machines,
+    machine_payouts: MachinePayouts,
     miner_addresses: MinerAddresses,
+    task: Task,
     _pool: Pool<Postgres>,
 }
 
@@ -31,8 +35,10 @@ impl OracleApp {
         broker: Broker,
         drones: Drones,
         machines: Machines,
+        machine_payouts: MachinePayouts,
         miner_addresses: MinerAddresses,
         solana: SolanaClient,
+        task: Task,
     ) -> anyhow::Result<Self> {
         Ok(Self {
             _config: config,
@@ -40,8 +46,10 @@ impl OracleApp {
             broker,
             drones,
             machines,
+            machine_payouts,
             miner_addresses,
             solana,
+            task,
         })
     }
 
@@ -108,9 +116,15 @@ impl OracleApp {
         // solana: calculate rewards
         // todo: queue drone_payout job; for now, just payout
 
-        //self.submit_payout(drone).await?;
+        let amount: i64 = reward.round() as i64;
+
         self.solana
-            .submit_payout(machine_address.address, reward)
+            .submit_payout(
+                machine_address.address,
+                amount,
+                &self.machine_payouts,
+                machine.id,
+            )
             .await?;
         Ok(())
     }

@@ -1,3 +1,11 @@
+CREATE TABLE IF NOT EXISTS machine (
+  id UUID PRIMARY KEY NOT NULL,
+  latitude FLOAT NOT NULL,
+  longitude FLOAT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS drone (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   machine_id UUID REFERENCES machine(id) NOT NULL,
@@ -13,14 +21,6 @@ CREATE TABLE IF NOT EXISTS drone (
   pilot_longitude FLOAT NOT NULL,
   home_latitude FLOAT NOT NULL,
   home_longitude FLOAT NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS machine (
-  id UUID PRIMARY KEY NOT NULL,
-  latitude FLOAT NOT NULL,
-  longitude FLOAT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  last_seen TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE IF NOT EXISTS drone_payout (
