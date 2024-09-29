@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::sync::OnceLock;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DbConfig {
@@ -8,6 +9,8 @@ pub struct DbConfig {
     pub pool_size: u32,
 }
 
+static POOL: OnceLock<sqlx::PgPool> = OnceLock::new();
+
 pub async fn init_pool(config: &DbConfig) -> anyhow::Result<sqlx::PgPool> {
     let pool = sqlx::postgres::PgPoolOptions::new()
         .max_connections(config.pool_size)
@@ -16,7 +19,13 @@ pub async fn init_pool(config: &DbConfig) -> anyhow::Result<sqlx::PgPool> {
 
     sqlx::migrate!().run(&pool).await?;
 
+    POOL.set(pool.clone()).unwrap();
+
     Ok(pool)
+}
+
+pub fn get_pool() -> &'static sqlx::PgPool {
+    POOL.get().unwrap()
 }
 
 impl Default for DbConfig {
