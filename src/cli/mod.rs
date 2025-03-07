@@ -66,18 +66,6 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     )
     .await?;
 
-    // println!("Starting notifications graphql server");
-    // let graphql_send = send.clone();
-    // let graphql_config = config.subgraph_server;
-    // let graphql_app = app.clone();
-    // handles.push(tokio::spawn(async move {
-    //     let _ = graphql_send.try_send(
-    //         crate::graphql::server::run_server(graphql_config, graphql_app)
-    //             .await
-    //             .context("graphql server error"),
-    //     );
-    // }));
-
     println!("Starting oracle server");
     let broker_send = send.clone();
     let mut broker = broker.clone();
@@ -91,7 +79,7 @@ async fn run_cmd(config: Config) -> anyhow::Result<()> {
     //    let _ = grpc_send.try_send(
     //        crate::grpc::run_server(grpc_config, app)
     //            .await
-    //            .context("grpc server error"),
+    //            .context("grpc error"),
     //    );
     //}));
 
