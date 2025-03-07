@@ -1,6 +1,8 @@
 # Description
 
-This was a DePIN Oracle that consumed miner submissions. The miner software is in another repository that I'm debating on open-sourcing for personal reasons, namely drone warfare being utilized in today's current events. However, the miner essentially scanned over Bluetooth LTE and WiFi Beacon signals and ingested packets that matched the Open DroneID protocol, implemented by the FAA. It would then submit these "submissions" to an MQTT host, whereas this Oracle would consume those submissions, do some math on payouts, and handle the economy accordingly.
+This was a DePIN Oracle that consumed miner submissions. The miner software is in another repository that I'm debating on open-sourcing for personal reasons. However, the miner essentially scanned over Bluetooth LTE Announcements and WiFi Beacon signals and ingested packets that matched the Remote ID / Open DroneID protocol, [implemented by the FAA](https://www.faa.gov/uas/getting_started/remote_id). It would then submit these payloads via an MQTT host with TLSv1.3 encryption, where this Oracle would consume those submissions, do some math on payouts, and handle the economy accordingly.
+
+Regarding the TLSv1.3 encryption, the plan was that certificates for the individual machines would be issued via this Oracle and assigned a "Wallet" -- although, the certs don't care about a wallet for now, just that they match up.
 
 I'm not an economist, I'm a programmer - so the crypto economy in this Oracle may not be the best design ever.
 
@@ -8,7 +10,7 @@ I'm not an economist, I'm a programmer - so the crypto economy in this Oracle ma
 
 ### What Happened?
 
-This project's code was done by myself and a group of people wanting to get into DePIN. I just wanted an excuse to learn Rust, and this seemed like a cool project to do it in; however, the team wanted to shift focus from drone mining - mainly because the traffic could be spoofed very easily - and wanted to do a random memecoin.
+This project's code was done by myself while the rest of the project was done by group of people involved in the DePIN (**De**centralized **P**hysical **I**nfrastructure **N**etwork) world of cryptocurrency. It's basically a way for crypto to be involved in renting or selling equipment out. I honestly just wanted an excuse to learn Rust, and this seemed like a cool project to do it in; however, the team wanted to shift focus from drone mining - mainly because the traffic could be spoofed very easily - and wanted to do a random memecoin.
 
 I did not have time to adjust this codebase after putting hours and hours of work into this during my paternity leave, and I just had twins. However, according to the influencer via a Tweet (I will not name his name out of respect), I flaked out. I reached out to him personally, and received no reply for a number of weeks.
 
