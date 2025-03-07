@@ -1,6 +1,6 @@
 # Description
 
-This was a DePIN Oracle that consumed miner submissions. The miner software is in another repository that I'm debating on open-sourcing for personal reasons. However, the miner essentially scanned over Bluetooth LTE Announcements and WiFi Beacon signals and ingested packets that matched the Remote ID / Open DroneID protocol, [implemented by the FAA](https://www.faa.gov/uas/getting_started/remote_id). It would then submit these payloads via an MQTT host with TLSv1.3 encryption, where this Oracle would consume those submissions, do some math on payouts, and handle the economy accordingly.
+This was a DePIN Oracle that consumed miner submissions via miner software, which I named Trebuchet. The miner software is in another repository that I'm debating on open-sourcing for personal reasons. However, the miner essentially scanned over Bluetooth LTE Announcements and WiFi Beacon signals and ingested packets that matched the Remote ID / Open DroneID protocol, [implemented by the FAA](https://www.faa.gov/uas/getting_started/remote_id). It would then submit these payloads via an MQTT host with TLSv1.3 encryption, where this Oracle would consume those submissions, do some math on payouts, and handle the economy accordingly.
 
 Regarding the TLSv1.3 encryption, the plan was that certificates for the individual machines would be issued via this Oracle and assigned a "Wallet" -- although, the certs don't care about a wallet for now, just that they match up.
 
