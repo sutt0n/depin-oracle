@@ -6,6 +6,18 @@ Regarding the TLSv1.3 encryption, the plan was that certificates for the individ
 
 I'm not an economist, I'm a programmer - so the crypto economy in this Oracle may not be the best design ever.
 
+# Flow
+
+```mermaid
+flowchart TD
+    A[Drone Scanner] -->|Drone Found| B(Publish to MQTT Broker over TLSv1.3)
+    B --> C{MQTT}
+    C -->|Consume| D[Payout Queue]
+    D -->|Number of Payouts > 10| E[Submit Bulk Payouts]
+```
+
+An example bulk payout can be seen here on Solana's devnet: https://explorer.solana.com/tx/3K2gFZMCiv4GFqBNz8P8GfqoAhw2P9Rkp8VaNSnUJAdHgo9rJJw8EVEtEYXZgrbQqQsmfgZdFgTswJKWUB54R5P6?cluster=devnet
+
 ## Potential FAQs
 
 ### What Happened?
