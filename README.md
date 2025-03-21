@@ -22,7 +22,7 @@ An example bulk payout can be seen here on Solana's devnet: https://explorer.sol
 
 ### What Happened?
 
-This project's code was done by myself while the rest of the project was done by group of people involved in the DePIN (**De**centralized **P**hysical **I**nfrastructure **N**etwork) world of cryptocurrency. It's basically a way for crypto to be involved in renting or selling equipment out. I honestly just wanted an excuse to learn Rust, and this seemed like a cool project to do it in; however, the team wanted to shift focus from drone mining - mainly because the traffic could be spoofed very easily - and wanted to do a random memecoin.
+This project's code was done by myself while the rest of the project was done by group of people involved in the DePIN (**De**centralized **P**hysical **I**nfrastructure **N**etwork) world of cryptocurrency. It's basically a way for crypto to be involved in renting or selling equipment out. I honestly just wanted an excuse to dive deeper into Rust and various forms of protocols (Bluetooth and WiFi packet parsing, TLS communication, etc.), and this seemed like a cool project to do it in; however, the team wanted to shift focus from drone mining - mainly because the traffic could be spoofed very easily - and wanted to do a random memecoin.
 
 I did not have time to adjust this codebase after putting hours and hours of work into this during my paternity leave, and I just had twins. However, according to the influencer via a Tweet (I will not name his name out of respect), I flaked out. I reached out to him personally, and received no reply for a number of weeks.
 
